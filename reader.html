@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Manga</title>
+
+	<link rel="icon" href="https://64.media.tumblr.com/b470c9f966a29bb972e893b6029afd4f/33365e459ac883f4-e0/s500x750/1e882ad1b1f0d40c49961456bf2c858eb6d6c9af.png" type="image/icon type">
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
+	<style type="text/css">
+		html,body{
+			height:100%;
+		}
+
+		body{
+			background: grey;
+		}
+
+		#pageCounter {
+			position: sticky;
+    		background: yellow;
+    		margin-left: 85%;
+    		top: 5%;
+    		color: black;
+    		font-size: x-large;
+
+		}
+		#page{
+			max-width: 100%;
+			min-height: 768px
+			cursor:pointer;
+		}
+
+		#menu{
+			
+			
+		}
+
+		.submit-button{
+			margin-top: 20px;
+		    margin-left: auto;
+		    display: block;
+		}
+
+		.backArrow{
+			position: absolute;
+		    display: block;
+		    height: -webkit-fill-available;
+		    
+		    min-width: 150px;
+		   
+		    color: black;
+		    font-size: x-large;
+		    cursor:pointer;
+		} 
+
+		.backArrow:hover{
+			background: #00ff7745;
+		}
+
+
+		#nav{
+    		background: whitesmoke;
+
+    		transition: hidden 1s, color 1s;
+		}
+
+	</style>
+</head>
+<body>
+
+
+<div id="nav" class="card">
+	
+<nav class="bd-subnavbar py-2" aria-label="Secondary navigation">
+  <div class="container-xxl d-flex align-items-md-center">
+    <form class="bd-search position-relative me-auto" style="width: inherit;">
+   	<input type="range" class="form-range" min="0" max="5" step="1" value="0" id="pageRange" >
+   </form>
+
+    <div class="dropdown ms-3">
+	  <button class="btn btn-warning" id="exit" onclick="exit()">
+	    <span class="d-none d-lg-inline">Close</span>
+	  </button>
+ 
+</div>
+
+
+    <button class="btn bd-sidebar-toggle d-md-none py-0 px-1 ms-3 order-3 collapsed" type="button" >
+    
+    </button>
+  </div>
+</nav>
+</div>
+
+<div id="menu">
+	<div class="container" style="margin-top:10%;">
+		<label for="pathInput" class="form-label">Path to chapter folder</label>
+		<input id="pathInput" class="form-control form-control-lg" type="file" webkitdirectory multiple>
+		<button class="btn btn-success submit-button" onclick="submit()">Submin</button>
+	</div>
+</div>
+
+
+<div id="reader" hidden>
+	<div id="pageCounter" class="badge">000</div>
+	<div id="backArrow" class="backArrow">         </div>
+	<div style="padding-bottom: 10%;" class="container">
+		<img id="page" src="chapter 1/1.png" onerror="imgError(this);" onload="onLoaded(this)"/>
+	</div>
+</div>
+
+<script type="text/javascript">
+	let homeScreen = true;
+	let files = [];
+	let folder = "Berserk Chapter ";
+	let chapter = "A0.001/";
+	let counter = 0;
+	let errorCounter = 0;
+	let caught = false;
+	let decrease = false; 
+	let path = folder + chapter + 'image';
+	let menu = document.getElementById('menu');
+	let reader = document.getElementById('reader');
+	let page = document.getElementById('page');
+	let pageCounter =  document.getElementById('pageCounter');
+	let direction = 0;
+
+
+
+	document.getElementById("pathInput").addEventListener("change", function(event) {
+ 		files = Array.prototype.slice.call(event.target.files);
+	}, false);
+
+
+
+	function submit(){
+		files.sort((a,b)=>{ return a.name.localeCompare(b.name)});
+		SetPage(counter);
+		homeScreen = false;
+		menu.hidden = true;
+		reader.hidden = false;
+		document.addEventListener('keydown', logKey);
+
+		document.getElementById('backArrow').addEventListener('click', ()=>{
+				if(counter === 0)
+					return;
+				counter--;
+				SetPage(counter);
+				direction = -1;
+				window.scrollTo(0,0);
+		})
+		page.addEventListener('click', ()=>{
+			if(counter === files.length)
+					counter = 0;
+				counter++;
+				SetPage(counter);
+				direction = 1;
+				window.scrollTo(0,0);
+		});
+
+		let range = document.getElementById('pageRange');
+		range.max = files.length;
+		range.addEventListener('change', (e)=>{
+			counter = Number.parseInt(e.target.value);
+				SetPage(counter);
+				window.scrollTo(0,0);
+		});
+	}
+
+	function exit(){
+		counter =0;
+		files = [];
+		homeScreen = true;
+		menu.hidden = false;
+		reader.hidden = true;
+	}
+
+	function onLoaded(img){
+		caught = false;
+		errorCounter = 0;
+	}
+
+
+	function SetPage(pageNumber, pageNumber2){
+		page.src = files[pageNumber].webkitRelativePath;
+		pageCounter.innerText = files[pageNumber].name
+		document.getElementById('backArrow').style.height=page.offsetHeight+'px';
+		document.getElementById('pageRange').value = pageNumber;
+		/*if(!pageNumber2){
+			let filename = counterToString(pageNumber) +'.jpg';
+			let imagePath = path + filename;
+			page.src = imagePath;
+				
+			pageCounter.innerText = 'image' + filename;
+		} else {
+			let filename = counterToString(pageNumber);
+			filename += '-' + counterToString(pageNumber2) +'.jpg';
+			let imagePath = path + filename;
+			page.src = imagePath;	
+			pageCounter.innerText = 'image' + filename;
+		}*/
+	}
+
+
+	function imgError (img){
+	
+		if(errorCounter === 0 && counter !== 0){
+			if(direction > 0){
+				errorCounter++;
+			caught = true;
+			SetPage(counter++, counter);
+			return;
+		} else {
+			errorCounter++;
+			counter--;
+			counter--;
+			caught = false;
+			decrease = true;
+			SetPage(counter++, counter);
+		}
+			
+		}
+
+		if(errorCounter === 1 && counter !== 0){
+			errorCounter++;
+			counter--;
+			counter--;
+			caught = false;
+			decrease = true;
+			SetPage(counter++, counter);
+			return;
+		} 
+		
+		if(errorCounter === 3 && counter !== 0) {
+			console.log('change chapter');
+			return;
+		}
+		
+	}
+
+	 function counterToString(pageNumber) {
+		switch(pageNumber.toString().length){
+			case 1:
+				return '00'+pageNumber;
+			case 2:
+				return '0'+pageNumber;
+			case 3:
+				return  pageNumber.toString();
+		}
+
+	}
+
+	
+	let logKey = (e) => {
+			
+			//right or space
+			if(e.code === 'ArrowRight' || e.code === 'Space'){
+				if(counter === files.length)
+					counter = 0;
+				counter++;
+				SetPage(counter);
+				direction = 1;
+			}
+
+			//left	
+			if(e.code === 'ArrowLeft'){
+				if(counter === 0)
+					return;
+				counter--;
+				SetPage(counter);
+				direction = -1;
+			}	
+
+			window.scrollTo(0, 0);
+
+	}
+
+
+</script>
+	<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
+</body>
+</html>
