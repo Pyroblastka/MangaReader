@@ -183,7 +183,7 @@
 
 
 	function SetPage(pageNumber, pageNumber2){
-		page.src = files[pageNumber].webkitRelativePath;
+		page.src = URL.createObjectURL(files[pageNumber]);
 		pageCounter.innerText = files[pageNumber].name
 		document.getElementById('backArrow').style.height=page.offsetHeight+'px';
 		document.getElementById('pageRange').value = pageNumber;
